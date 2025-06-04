@@ -11,7 +11,15 @@ const getTasks = (req, res) => {
 //@access Public
 
 const createTask = (req, res) => {
-  res.status(200).json({ message: "Create a task" });
+  console.log(req.body);
+
+  const { title, description, priority } = req.body;
+  if (!title || !description || !priority) {
+    res.status(400);
+    throw new Error("Please add all fields");
+  }
+
+  res.status(201).json({ message: "Create a task" });
 };
 
 //@desc Get a specific task
