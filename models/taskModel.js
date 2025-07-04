@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema(
   {
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId, // Use ObjectId for referencing another document
+      required: true,
+      ref: "User", // Reference to the User model
+    },
     title: {
       type: String,
       required: [true, "Please add a task title"],
@@ -17,7 +22,7 @@ const taskSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically manage createdAt and updatedAt fields
   }
 );
 

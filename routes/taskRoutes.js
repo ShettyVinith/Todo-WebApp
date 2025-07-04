@@ -7,6 +7,9 @@ const {
   updateTask,
   deleteTask,
 } = require("../controllers/taskController");
+const validateToken = require("../middleware/validateTokenHandler");
+
+router.use(validateToken); // Apply token validation middleware to all routes in this router
 
 router.route("/").get(getTasks);
 

@@ -3,16 +3,16 @@ const Task = require("../models/taskModel");
 
 //@desc Get all tasks
 //@route GET /api/tasks
-//@access Public
+//@access Private
 
 const getTasks = asyncHandler(async (req, res) => {
-  const tasks = await Task.find();
+  const tasks = await Task.find({ user_id: req.user.id });
   res.status(200).json(tasks);
 });
 
 //@desc Create a task
 //@route POST /api/tasks
-//@access Public
+//@access Private
 
 const createTask = asyncHandler(async (req, res) => {
   console.log(req.body);
@@ -27,13 +27,14 @@ const createTask = asyncHandler(async (req, res) => {
     title,
     description,
     priority,
+    user_id: req.user.id, // Associate the task with the logged-in user
   });
   res.status(201).json(task);
 });
 
 //@desc Get a specific task
 //@route GET /api/tasks/:id
-//@access Public
+//@access Private
 
 const getTask = asyncHandler(async (req, res) => {
   const task = await Task.findById(req.params.id);
@@ -46,13 +47,18 @@ const getTask = asyncHandler(async (req, res) => {
 
 //@desc Update a task
 //@desc PUT /api/tasks/:id
-//@@access Public
+//@@access Private
 
 const updateTask = asyncHandler(async (req, res) => {
   const task = await Task.findById(req.params.id);
   if (!task) {
     res.status(404);
     throw new Error("Task not found");
+  }
+
+  if (task.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User not authorized to update this task");
   }
 
   const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
@@ -63,7 +69,7 @@ const updateTask = asyncHandler(async (req, res) => {
 
 //@desc Delete a task
 //@desc DELETE /api/tasks/:id
-//@@access Public
+//@@access Private
 
 const deleteTask = asyncHandler(async (req, res) => {
   const task = await Task.findById(req.params.id);
@@ -72,10 +78,13 @@ const deleteTask = asyncHandler(async (req, res) => {
     throw new Error("Task not found");
   }
 
-  const deletedTask = await Task.findByIdAndDelete(req.params.id);
-  res.status(200).json(deletedTask);
-});
+  if (task.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User not authorized to delete this task");
+  }
 
-//testing
+  await Task.deleteOne({ _id: req.params.id });
+  res.status(200).json(task);
+});
 
 module.exports = { getTasks, createTask, getTask, updateTask, deleteTask };
